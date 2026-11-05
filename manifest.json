@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Interface X-Ray",
+  "short_name": "X-Ray",
+  "version": "1.0.0",
+  "description": "See the structure. Find the cause. Local visual DOM inspection, 3D layers and evidence-based CSS diagnostics.",
+  "minimum_chrome_version": "110",
+  "permissions": ["activeTab", "scripting"],
+  "background": {"service_worker": "background.js"},
+  "action": {"default_title": "Toggle Interface X-Ray", "default_icon": {"16": "assets/icon16.png", "32": "assets/icon32.png"}},
+  "icons": {"16": "assets/icon16.png", "32": "assets/icon32.png", "48": "assets/icon48.png", "128": "assets/icon128.png"},
+  "commands": {"_execute_action": {"suggested_key": {"default": "Alt+Shift+X"}, "description": "Toggle Interface X-Ray"}},
+  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'self'"}
+}

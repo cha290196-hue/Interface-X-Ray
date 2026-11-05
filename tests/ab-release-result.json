@@ -1,0 +1,155 @@
+{
+  "version": "1.0",
+  "capturedA": "2026-11-05T10:22:11.709Z",
+  "capturedB": "2026-11-05T10:22:11.959Z",
+  "viewportA": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 1
+  },
+  "viewportB": {
+    "width": 1440,
+    "height": 900,
+    "dpr": 1
+  },
+  "nodesA": 110,
+  "nodesB": 110,
+  "issuesA": 4,
+  "issuesB": 1,
+  "newIssues": [],
+  "resolvedIssues": [
+    {
+      "id": 1,
+      "rule": "horizontal-overflow",
+      "nodeId": 75,
+      "certainty": "confirmed",
+      "explain": "Document scroll width exceeds viewport by 285px.",
+      "evidence": {
+        "scrollWidth": 1725,
+        "viewportWidth": 1440,
+        "overflowPx": 285,
+        "witnessRect": {
+          "x": 225.28,
+          "y": 854.39,
+          "left": 225.28,
+          "top": 854.39,
+          "right": 1725.28,
+          "bottom": 900.39,
+          "width": 1500,
+          "height": 46
+        },
+        "witnessLabel": "div#bad-flex-element.wide"
+      },
+      "related": [],
+      "suggestions": [
+        "Inspect the rightmost descendants",
+        "Test min-width: 0 in flex/grid items"
+      ]
+    },
+    {
+      "id": 2,
+      "rule": "viewport-overflow",
+      "nodeId": 75,
+      "certainty": "likely",
+      "explain": "Element boundary passes viewport by 285.3px.",
+      "evidence": {
+        "rect": {
+          "x": 225.28,
+          "y": 854.39,
+          "left": 225.28,
+          "top": 854.39,
+          "right": 1725.28,
+          "bottom": 900.39,
+          "width": 1500,
+          "height": 46
+        },
+        "viewportWidth": 1440,
+        "overshootLeft": 0,
+        "overshootRight": 285.3,
+        "width": "1500px",
+        "minWidth": "1500px",
+        "position": "static"
+      },
+      "related": [
+        73
+      ],
+      "suggestions": [
+        "Check width and min-width",
+        "Check margins, transforms or fixed-width children"
+      ]
+    },
+    {
+      "id": 3,
+      "rule": "flex-grid-constraint",
+      "nodeId": 75,
+      "certainty": "likely",
+      "explain": "Child extends beyond its flex/grid container.",
+      "evidence": {
+        "layout": "flex",
+        "parentWidth": 790,
+        "childWidth": 1500,
+        "childMinWidth": "1500px",
+        "excessPx": 765.3
+      },
+      "related": [
+        73
+      ],
+      "suggestions": [
+        "Test min-width: 0 if child refuses to shrink",
+        "Inspect flex-wrap, grid tracks and gap"
+      ]
+    }
+  ],
+  "changes": [
+    {
+      "id": 75,
+      "label": "div#bad-flex-element.wide",
+      "delta": {
+        "width": -1089.52,
+        "height": 0,
+        "left": 0,
+        "top": 0
+      },
+      "changedStyle": [],
+      "before": {
+        "rect": {
+          "x": 225.28,
+          "y": 854.39,
+          "left": 225.28,
+          "top": 854.39,
+          "right": 1725.28,
+          "bottom": 900.39,
+          "width": 1500,
+          "height": 46
+        },
+        "display": "block",
+        "visibility": "visible",
+        "flexWrap": "nowrap",
+        "gridColumns": "none"
+      },
+      "after": {
+        "rect": {
+          "x": 225.28,
+          "y": 854.39,
+          "left": 225.28,
+          "top": 854.39,
+          "right": 635.77,
+          "bottom": 900.39,
+          "width": 410.48,
+          "height": 46
+        },
+        "display": "block",
+        "visibility": "visible",
+        "flexWrap": "nowrap",
+        "gridColumns": "none"
+      }
+    }
+  ],
+  "added": [],
+  "removed": [],
+  "limitations": [
+    "Snapshots track only nodes within the configured scan limit",
+    "Node IDs are stable only within a single inspector session",
+    "CSS pixel viewport sizes do not emulate device pixel ratio or touch"
+  ]
+}

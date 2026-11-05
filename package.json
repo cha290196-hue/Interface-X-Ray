@@ -1,0 +1,20 @@
+{
+  "name": "interface-x-ray",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local-first MV3 visual DOM inspector, 3D layer explorer, measured layout diagnostics and reversible CSS patches",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node --check src/core.js && node --check src/inspect.js && node --check src/diagnose.js && node --check src/patch.js && node --check src/scene.js && node --check src/ui.js && node --check src/bootstrap.js && node --check src/background.js",
+    "test": "node --test tests/unit/*.test.mjs",
+    "test:e2e": "python tests/e2e.py",
+    "test:scenarios": "python tests/scenarios.py",
+    "test:release": "python tests/release_qa.py && python tests/measure_qa.py && python tests/responsive_qa.py && python tests/visual_qa.py",
+    "test:browser": "python tests/e2e.py"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

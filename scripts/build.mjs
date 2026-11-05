@@ -1,0 +1,14 @@
+import { readFile,writeFile,mkdir,copyFile } from 'node:fs/promises';
+import {resolve} from 'node:path';
+const root=resolve(import.meta.dirname,'..');
+const parts=['core.js','inspect.js','diagnose.js','patch.js','scene.js','ui.js','bootstrap.js'];
+const css=await readFile(resolve(root,'src/ui.css'),'utf8');
+const code=['/* Interface X-Ray: offline, dependency-free, self-contained content script */','(()=>{','"use strict";',`const STYLES=${JSON.stringify(css)};`];
+for (const part of parts) code.push(`\n/* --- ${part} --- */\n`,await readFile(resolve(root,'src',part),'utf8'));
+code.push('\n})();\n');
+await mkdir(resolve(root,'dist/assets'),{recursive:true});
+await writeFile(resolve(root,'dist/content.js'),code.join('\n'));
+await copyFile(resolve(root,'src/background.js'),resolve(root,'dist/background.js'));
+await copyFile(resolve(root,'manifest.json'),resolve(root,'dist/manifest.json'));
+for(const n of [16,32,48,128]) await copyFile(resolve(root,`assets/icon${n}.png`),resolve(root,`dist/assets/icon${n}.png`));
+console.log(`Built self-contained MV3 extension: ${Buffer.byteLength(code.join('\n'))} bytes content.js`);

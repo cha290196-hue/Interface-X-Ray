@@ -1,0 +1,49 @@
+function runDiagnostics(nodes){const issues=[],seen=new Set(),vw=innerWidth,vh=innerHeight;const push=(rule,node,certainty,explain,evidence,related=[],suggestions=[])=>{const key=rule+':'+(node?.id||0);if(seen.has(key))return;seen.add(key);issues.push({id:issues.length+1,rule,nodeId:node?.id||null,label:node?.label||'document',certainty,explain,evidence,related,suggestions});};
+const dw=Math.max(document.documentElement.scrollWidth,document.body?.scrollWidth||0);
+ const unclipped= n=>{let a=nearestElement(n.id)?.parentElement;let hops=0;while(a&&hops++<24){const st=css(a);if(['hidden','clip'].includes(st.overflowX))return false;a=a.parentElement;}return true;};
+ const rootWitness=nodes.filter(n=>n.rect.width>0&&n.rect.right>vw+2&&n.rect.top<vh*3&&n.rect.bottom>-vh&&n.position!=='fixed'&&unclipped(n)).sort((a,b)=>b.rect.right-a.rect.right)[0];
+if(dw>vw+2){const extra=Math.round(dw-vw);push('horizontal-overflow',rootWitness||nodes[0],'confirmed',`Document scroll width exceeds viewport by ${extra}px.`,{scrollWidth:dw,viewportWidth:vw,overflowPx:extra,witnessRect:rootWitness?.rect||null,witnessLabel:rootWitness?.label||'not uniquely identified'},[],['Inspect the rightmost descendants','Test min-width: 0 in flex/grid items']);}
+let overflowCount=0, clipCount=0, narrowCount=0, fixedCount=0, layoutCount=0;
+for(const n of nodes){const el=nearestElement(n.id);if(!el||n.display==='none'||n.visibility==='hidden'||n.rect.width<1||n.rect.height<1)continue;const r=n.rect;
+if((r.right>vw+3||r.left< -3) && n.position!=='fixed' && n.position!=='absolute' && r.top<vh*2 && r.bottom>-vh && overflowCount++<20){const s=css(el),right=+Math.max(0,r.right-vw).toFixed(1),left=+Math.max(0,-r.left).toFixed(1);const certainty=dw>vw+2?'likely':'possible';push('viewport-overflow',n,certainty,`Element boundary passes viewport by ${fmt(right||left)}px.`,{rect:r,viewportWidth:vw,overshootLeft:left,overshootRight:right,width:s.width,minWidth:s.minWidth,position:s.position},[n.parentId].filter(Boolean),['Check width and min-width','Check margins, transforms or fixed-width children']);}
+if(narrowCount<8 && vw<=760 && parseFloat(css(el).minWidth)>vw*.75 && r.width>vw*.9 && r.right>vw){narrowCount++;push('fixed-min-width',n,'likely','A large minimum width is constraining a narrow viewport.',{minWidth:css(el).minWidth,viewportWidth:vw,rect:r},[n.parentId].filter(Boolean),['Test min-width: 0','Use max-width: 100% where appropriate']);}
+if(n.parentId && clipCount<15){let p=el.parentElement;let hops=0;while(p&&hops++<5){const ps=css(p);if(/^(hidden|clip)$/.test(ps.overflowX)||/^(hidden|clip)$/.test(ps.overflowY)){const pr=p.getBoundingClientRect();const over=Math.max(0,r.right-pr.right,pr.left-r.left,r.bottom-pr.bottom,pr.top-r.top);if(over>5 && r.width>2 && r.height>2){clipCount++;push('clipped-content',n,'possible','An overflow-clipping ancestor intersects this element’s border box.',{clippingAncestor:elementLabel(p),ancestorRect:rectObj(pr),elementRect:r,excessPx:+over.toFixed(1),overflowX:ps.overflowX,overflowY:ps.overflowY},[getId(p)],['Check overflow-x / overflow-y','Clipping may be intentional for carousels or masks']);break;}}p=p.parentElement;}}
+if(layoutCount<12&&n.parentId){const p=el.parentElement;if(p){const ps=css(p);const pr=p.getBoundingClientRect();if((ps.display.includes('flex')||ps.display.includes('grid'))&&r.right>pr.right+4 && r.width>pr.width*.9){layoutCount++;push('flex-grid-constraint',n,'likely','Child extends beyond its flex/grid container.',{layout:ps.display,parentWidth:pr.width,childWidth:r.width,childMinWidth:css(el).minWidth,excessPx:+(r.right-pr.right).toFixed(1)},[getId(p)],['Test min-width: 0 if child refuses to shrink','Inspect flex-wrap, grid tracks and gap']);}}}
+if(fixedCount<10&&n.position==='fixed' && r.width>vw*.35&&r.height>24 && r.top<vh&&r.bottom>0){const testX=Math.min(vw-6,Math.max(6,r.left+Math.min(r.width*.5,150))),testY=Math.min(vh-6,Math.max(6,r.top+Math.min(r.height*.5,40)));const other=document.elementFromPoint(testX,testY);if(other&&el.contains(other)&&!isOwn(other)){fixedCount++;push('fixed-overlay',n,'possible','A fixed-position element covers a sizeable viewport region. This may be intentional.',{rect:r,viewportWidth:vw,viewportHeight:vh,zIndex:n.zIndex},[],['Check whether it obscures important controls','Review z-index and pointer-events']);}}
+}
+// Conservative rectangle intersection: only floating peers, never normal-flow parent/child overlap.
+const floating=nodes.filter(n=>['absolute','fixed'].includes(n.position)&&n.rect.width>12&&n.rect.height>12&&n.rect.top<vh&&n.rect.bottom>0&&n.rect.left<vw&&n.rect.right>0).slice(0,70);
+let overlapLimit=0;
+for(let a=0;a<floating.length&&overlapLimit<8;a++)for(let b=a+1;b<floating.length&&overlapLimit<8;b++){
+ const one=floating[a],two=floating[b],el1=nearestElement(one.id),el2=nearestElement(two.id);
+ if(!el1||!el2||el1.contains(el2)||el2.contains(el1))continue;
+ const w=Math.max(0,Math.min(one.rect.right,two.rect.right)-Math.max(one.rect.left,two.rect.left));
+ const h=Math.max(0,Math.min(one.rect.bottom,two.rect.bottom)-Math.max(one.rect.top,two.rect.top));
+ const intersection=w*h,small=Math.min(one.rect.width*one.rect.height,two.rect.width*two.rect.height);
+ if(small>0&&intersection/small>.35){overlapLimit++;push('floating-overlap',two,'possible','Two independent positioned elements overlap substantially. This may be intentional.',{overlapAreaPx2:Math.round(intersection),overlapRatio:+(intersection/small).toFixed(2),first:one.label,second:two.label,firstRect:one.rect,secondRect:two.rect},[one.id],['Verify that neither element hides critical interactive content','Inspect positioning offsets and z-index within each stacking context']);}
+}
+let targetLimit=0;
+for(const n of nodes){if(targetLimit>=8)break;const el=nearestElement(n.id);if(!el||!['button','input','select','textarea'].includes(n.tag)||n.display==='none'||n.visibility==='hidden')continue;
+const r=n.rect;if(r.width>=1&&r.height>=1&&(r.width<18||r.height<18)&&r.right>0&&r.left<vw&&r.bottom>0&&r.top<vh){targetLimit++;push('small-control',n,'possible','A visible interactive element has a small border box.',{width:r.width,height:r.height,referenceWidth:18,referenceHeight:18},[n.parentId].filter(Boolean),['Check accidental height or width collapse','Some intentionally compact controls are valid']);}}
+return issues.sort((a,b)=>({confirmed:0,likely:1,possible:2}[a.certainty]-{confirmed:0,likely:1,possible:2}[b.certainty]));}
+function traceHypotheses(issue){
+ const el=nearestElement(issue?.nodeId);if(!el)return [];
+ const s=css(el),r=el.getBoundingClientRect(),parent=el.parentElement;
+ const pr=parent?.getBoundingClientRect(),ps=parent?css(parent):null;
+ const proposals=[];
+ const add=(name,confidence,evidence,suggestion)=>proposals.push({name,confidence,evidence,suggestion});
+ if(pr && /flex|grid/.test(ps.display) && r.width>pr.width+2){
+  if(parseFloat(s.minWidth)>pr.width){add('Minimum width exceeds containing Flex/Grid box','strong',`min-width ${s.minWidth} · child ${fmt(r.width)}px · parent ${fmt(pr.width)}px`,'Test min-width: 0 and measure again');}
+  else add('Flex/Grid child does not fit its container','moderate',`${ps.display} parent ${fmt(pr.width)}px · child ${fmt(r.width)}px · flex-wrap ${ps.flexWrap}`,'Inspect flex-basis, min-width and track sizes');
+ }
+ if(r.right>innerWidth+2){const v=Math.max(0,r.right-innerWidth);if(parseFloat(s.width)>innerWidth && /^\d/.test(s.width))add('Computed width exceeds current viewport','strong',`width ${s.width} · viewport ${innerWidth}px · overhang ${fmt(v)}px`,'Test max-width: 100%');
+ if(s.transform!=='none')add('Transformed visual bounds extend beyond viewport','moderate',`transform ${s.transform} · boundary ${fmt(r.right)}px`,'Temporarily remove transform to compare bounds');
+ if(ps && !/hidden|clip/.test(ps.overflowX))add('Ancestor does not clip horizontal overflow','possible',`parent overflow-x ${ps.overflowX} · boundary ${fmt(r.right)}px`,'Inspect ancestor overflow or width constraints');}
+ if(issue.rule==='clipped-content' && parent){let cur=parent;while(cur){const st=css(cur);if(['hidden','clip'].includes(st.overflowX)||['hidden','clip'].includes(st.overflowY)){const cr=cur.getBoundingClientRect();add('Ancestor clips the target bounding rectangle','strong',`${elementLabel(cur)} · overflow ${st.overflowX}/${st.overflowY} · parent ${fmt(cr.width)}×${fmt(cr.height)}`,'Consider whether clipping is intentional before testing overflow: visible');break;}cur=cur.parentElement;}}
+ if(issue.rule==='fixed-overlay')add('Fixed surface occupies part of viewport','moderate',`fixed rectangle ${fmt(r.width)}×${fmt(r.height)} · top ${fmt(r.top)}px`,'Check target visibility and pointer interception manually');
+ if(issue.rule==='floating-overlap')add('Positioned boxes intersect','moderate',`measured overlap ratio ${issue.evidence.overlapRatio||'unknown'}`,'Check overlap against intended visual layering');
+ if(!proposals.length)add('Cause is not established from this measurement','uncertain',`rule ${issue.rule} · ${elementLabel(el)}`,'Inspect computed styles and test reversible changes');
+ return proposals;
+}
+function traceIssue(issue){const el=nearestElement(issue.nodeId);if(!el)return [];const path=[];let cur=el;for(let i=0;i<6&&cur&&cur instanceof Element;i++,cur=cur.parentElement){const s=css(cur),r=cur.getBoundingClientRect();path.push({label:elementLabel(cur),id:getId(cur),geometry:`${fmt(r.width)} × ${fmt(r.height)} @ ${fmt(r.left)},${fmt(r.top)}`,css:`display: ${s.display}; min-width: ${s.minWidth}; overflow: ${s.overflow}; position: ${s.position}`,role:i===0?'Target':i===1?'Parent':'Ancestor'});}return path;}
+function focusIssue(issue){if(!issue)return;X.issueFocus=issue;const el=nearestElement(issue.nodeId);if(el){X.selected=el;el.scrollIntoView({block:'center',inline:'nearest',behavior:X.opts.reducedMotion?'instant':'smooth'});}X.mode='inspect';X.tab='diagnose';schedulePaint();renderAll();}

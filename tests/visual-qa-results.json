@@ -1,0 +1,262 @@
+[
+  {
+    "viewport": "390x844",
+    "dpr": 1,
+    "pass": true,
+    "geometry": {
+      "toolbar": {
+        "x": 7,
+        "y": 11,
+        "width": 376,
+        "height": 48,
+        "left": 7,
+        "right": 383,
+        "bottom": 59
+      },
+      "panel": {
+        "x": 5,
+        "y": 68,
+        "width": 378,
+        "height": 769,
+        "left": 5,
+        "right": 383,
+        "bottom": 837
+      },
+      "bodyOverflow": 0,
+      "iconButtons": [
+        {
+          "label": "Toggle annotations",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u4e3b\u9898",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u5feb\u7167",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u8bbe\u7f6e",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u9000\u51fa",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u6682\u505c",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "Collapse",
+          "deltaX": 0,
+          "deltaY": 0
+        }
+      ]
+    }
+  },
+  {
+    "viewport": "768x900",
+    "dpr": 1,
+    "pass": true,
+    "geometry": {
+      "toolbar": {
+        "x": 186.5,
+        "y": 11,
+        "width": 395,
+        "height": 48,
+        "left": 186.5,
+        "right": 581.5,
+        "bottom": 59
+      },
+      "panel": {
+        "x": 348,
+        "y": 72,
+        "width": 410,
+        "height": 818,
+        "left": 348,
+        "right": 758,
+        "bottom": 890
+      },
+      "bodyOverflow": 0,
+      "iconButtons": [
+        {
+          "label": "Toggle annotations",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u4e3b\u9898",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u5feb\u7167",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u8bbe\u7f6e",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u9000\u51fa",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u6682\u505c",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "Collapse",
+          "deltaX": 0,
+          "deltaY": 0
+        }
+      ]
+    }
+  },
+  {
+    "viewport": "1440x900",
+    "dpr": 1,
+    "pass": true,
+    "geometry": {
+      "toolbar": {
+        "x": 293.03125,
+        "y": 18,
+        "width": 853.9375,
+        "height": 54,
+        "left": 293.03125,
+        "right": 1146.96875,
+        "bottom": 72
+      },
+      "panel": {
+        "x": 1013,
+        "y": 85,
+        "width": 410,
+        "height": 797,
+        "left": 1013,
+        "right": 1423,
+        "bottom": 882
+      },
+      "bodyOverflow": 0,
+      "iconButtons": [
+        {
+          "label": "Toggle annotations",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u4e3b\u9898",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u5feb\u7167",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u8bbe\u7f6e",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u9000\u51fa",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u6682\u505c",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "Collapse",
+          "deltaX": 0,
+          "deltaY": 0
+        }
+      ]
+    }
+  },
+  {
+    "viewport": "1440x900",
+    "dpr": 2,
+    "pass": true,
+    "geometry": {
+      "toolbar": {
+        "x": 293.03125,
+        "y": 18,
+        "width": 853.9375,
+        "height": 54,
+        "left": 293.03125,
+        "right": 1146.96875,
+        "bottom": 72
+      },
+      "panel": {
+        "x": 1013,
+        "y": 85,
+        "width": 410,
+        "height": 797,
+        "left": 1013,
+        "right": 1423,
+        "bottom": 882
+      },
+      "bodyOverflow": 0,
+      "iconButtons": [
+        {
+          "label": "Toggle annotations",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u4e3b\u9898",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u5feb\u7167",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u8bbe\u7f6e",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u9000\u51fa",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "\u6682\u505c",
+          "deltaX": 0,
+          "deltaY": 0
+        },
+        {
+          "label": "Collapse",
+          "deltaX": 0,
+          "deltaY": 0
+        }
+      ]
+    }
+  },
+  {
+    "check": "DPI2 canvas pixel resolution",
+    "pass": true,
+    "dimensions": {
+      "w": 2880,
+      "h": 1800
+    }
+  }
+]

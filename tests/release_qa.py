@@ -1,0 +1,102 @@
+import os, shutil
+CHROMIUM_PATH=os.getenv('CHROMIUM_PATH') or shutil.which('chromium') or shutil.which('chromium-browser') or shutil.which('google-chrome') or shutil.which('msedge')
+"""Additional release-gate Chromium interaction tests, without mocked DOM geometry."""
+from pathlib import Path
+from playwright.sync_api import sync_playwright
+import json, time
+ROOT=Path(__file__).resolve().parents[1]
+SHOTS=ROOT/'screenshots';SHOTS.mkdir(exist_ok=True)
+RESULTS=[]
+def record(name,ok,detail=''):
+ RESULTS.append({'check':name,'passed':bool(ok),'detail':str(detail)[:300]})
+ print(('PASS' if ok else 'FAIL'),name,detail,flush=True)
+with sync_playwright() as p:
+ browser=p.chromium.launch(**({'executable_path':CHROMIUM_PATH} if CHROMIUM_PATH else {}),headless=True,args=['--no-sandbox','--enable-unsafe-swiftshader'])
+ # Preserve multiple patch values and restore original CSS exactly.
+ page=browser.new_page(viewport={'width':1440,'height':900},accept_downloads=True)
+ errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+ page.set_content((ROOT/'tests/fixtures/lab.html').read_text())
+ page.add_script_tag(path=str(ROOT/'dist/content.js'))
+ root=page.locator('#interface-xray-extension-host')
+ root.locator('.ix-tree-row').first.wait_for(timeout=10000)
+ page.locator('#bad-flex-element').click(force=True)
+ root.locator('[data-action=patch]').first.click()
+ root.locator('#ix-prop').select_option('min-width')
+ for v in ['1000px','500px','0px']:
+  root.locator('#ix-value').fill(v);root.locator('[data-action=apply-patch]').click()
+ initial=root.locator('.ix-panel-body').inner_text()
+ record('Original computed CSS baseline survives 3 edits','1500px' in initial,initial.split('初始内联值')[0][-150:])
+ for v in ['500px','1000px','1500px']:
+  root.locator('[data-action=undo]').click()
+  got=page.locator('#bad-flex-element').evaluate('(el)=>getComputedStyle(el).minWidth')
+  record('Undo progressive to '+v,got==v,got)
+ root.locator('[data-action=redo]').click()
+ record('Redo after 3 sequential edits',page.locator('#bad-flex-element').evaluate('(el)=>getComputedStyle(el).minWidth')=='1000px')
+ root.locator('[data-action=reset-patches]').click()
+ record('Reset restores stylesheet value',page.locator('#bad-flex-element').evaluate('(el)=>getComputedStyle(el).minWidth')=='1500px')
+ # A/B compares actual dynamic geometry (also export JSON).
+ root.locator('[data-action=tab][data-tab=compare]').click();root.locator('[data-action=snap-A]').click()
+ old=json.loads(page.evaluate('''() => {const a=document.querySelector('#bad-flex-element').getBoundingClientRect();return JSON.stringify({w:a.width,r:a.right})}'''))
+ root.locator('[data-action=tab][data-tab=patch]').click();root.locator('#ix-prop').select_option('min-width');root.locator('#ix-value').fill('0px');root.locator('[data-action=apply-patch]').click()
+ root.locator('[data-action=tab][data-tab=compare]').click();root.locator('[data-action=snap-B]').click()
+ record('Measured A/B thumbnails rendered',root.locator('.ix-mini-map svg').count()==2)
+ with page.expect_download(timeout=10000) as d:root.locator('[data-action=export-comparison]').click()
+ down=d.value;file=ROOT/'tests/ab-release-result.json';down.save_as(str(file)); data=json.loads(file.read_text())
+ record('Real A/B exported widths changed',bool(data['changes']) and data['viewportA']['width']==1440 and len(data['changes'])>0,len(data['changes']))
+ record('A/B report contains real bug target',any('bad-flex-element' in x['label'] for x in data['changes']))
+ page.screenshot(path=str(SHOTS/'13-release-ab.png'))
+ # Select CSS selector from search, and restore Enter/typing interaction.
+ root.locator('[data-action=tab][data-tab=elements]').click()
+ root.locator('#ix-search').fill('css:#bad-flex-element')
+ record('CSS query search selects exact DOM result',root.locator('.ix-tree-row').count()==1)
+ root.locator('.ix-tree-row').first.click()
+ record('CSS query row selects actual element','bad-flex-element' in root.locator('.ix-card.selected').first.inner_text())
+ # 3D fallback selectable and palette user control.
+ root.locator('[data-action=layers]').click();page.wait_for_timeout(900)
+ record('3D node set rendered',root.locator('.ix-scene-count').inner_text().split('/')[0].strip()!='0')
+ root.locator('#ix-scene-type').select_option('stack');page.wait_for_timeout(150)
+ record('Stacking context mode switched',root.locator('#ix-scene-type').input_value()=='stack')
+ root.locator('[data-action=settings]').first.click();root.locator('#ix-palette').select_option('cb-safe')
+ record('Accessible color palette changed',root.locator('#ix-palette').input_value()=='cb-safe')
+ root.locator('#ix-locale').select_option('en');record('English interface restored','SCAN' in root.locator('.ix-panel').inner_text().upper() or 'APPEARANCE' in root.locator('.ix-panel').inner_text().upper())
+ root.locator('#ix-locale').select_option('zh');record('Chinese interface restored','外观设置' in root.locator('.ix-panel').inner_text())
+ page.screenshot(path=str(SHOTS/'14-release-settings.png'))
+ # Marked UI doesn't persist after exit.
+ root.locator('[data-action=exit]').click();record('No DOM overlay after exit',page.locator('#interface-xray-extension-host').count()==0)
+ record('Exit restores original CSS',page.locator('#bad-flex-element').evaluate('(el)=>getComputedStyle(el).minWidth')=='1500px')
+ page.close()
+ # Large tree can scroll well beyond first 200 without injecting thousands of tree rows.
+ heavy=browser.new_page(viewport={'width':1280,'height':800})
+ heavy.set_content((ROOT/'tests/fixtures/scenarios/large-dom.html').read_text())
+ heavy.add_script_tag(path=str(ROOT/'dist/content.js'))
+ h=heavy.locator('#interface-xray-extension-host')
+ heavy.wait_for_timeout(1100)
+ tree=h.locator('#ix-tree');count=tree.locator('.ix-tree-row').count()
+ record('DOM tree virtualized <70 mounted rows',count<70,count)
+ tree.evaluate('(el)=>{el.scrollTop=el.scrollHeight;el.dispatchEvent(new Event("scroll",{bubbles:true}));}')
+ heavy.wait_for_timeout(80)
+ last=h.locator('.ix-tree-row').last.get_attribute('title')
+ record('Scrolled DOM tree exposes late nodes','span.cell' in (last or ''),last)
+ heavy.screenshot(path=str(SHOTS/'15-release-large-dom.png'))
+ h.locator('#ix-search').fill('css:#many > span:nth-child(3100)')
+ record('CSS selector search finds node beyond row 200',h.locator('.ix-tree-row').count()==1)
+ h.locator('.ix-tree-row').first.click()
+ record('Large DOM node selection resolves real page','span.cell' in h.locator('.ix-card.selected').inner_text())
+ heavy.close()
+ # Open shadow root live update triggers scan using local observer.
+ shadow=browser.new_page(viewport={'width':1100,'height':760})
+ shadow.set_content((ROOT/'tests/fixtures/scenarios/shadow-transform.html').read_text())
+ shadow.add_script_tag(path=str(ROOT/'dist/content.js'))
+ sh=shadow.locator('#interface-xray-extension-host');shadow.wait_for_timeout(600)
+ base=sh.locator('.ix-status').inner_text()
+ shadow.evaluate('''() => {const s=document.querySelector('#shadow-host').shadowRoot;const b=document.createElement('strong');b.id='dynamically-added-in-shadow';b.textContent='new';s.appendChild(b);}''')
+ shadow.wait_for_timeout(1300)
+ sh.locator('#ix-search').fill('dynamically-added-in-shadow')
+ record('Shadow DOM mutation observed and rescanned',sh.locator('.ix-tree-row').count()>=1,base)
+ shadow.close()
+ record('No page JavaScript exceptions',not errors,errors)
+ browser.close()
+( ROOT/'tests/release-qa-results.json').write_text(json.dumps(RESULTS,indent=2,ensure_ascii=False))
+failed=[r for r in RESULTS if not r['passed']]
+print('TOTAL',len(RESULTS),'PASS',len(RESULTS)-len(failed),'FAIL',len(failed),flush=True)
+if failed:raise SystemExit(1)

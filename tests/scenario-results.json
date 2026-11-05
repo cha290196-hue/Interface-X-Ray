@@ -1,0 +1,93 @@
+[
+  {
+    "case": "article",
+    "passed": true,
+    "issues": 0,
+    "jsErrors": [],
+    "expectedRule": null
+  },
+  {
+    "case": "flex",
+    "passed": true,
+    "issues": 1,
+    "jsErrors": [],
+    "expectedRule": "flex-grid-constraint"
+  },
+  {
+    "case": "grid",
+    "passed": true,
+    "issues": 0,
+    "jsErrors": [],
+    "expectedRule": null
+  },
+  {
+    "case": "nested-scroll",
+    "passed": true,
+    "issues": 0,
+    "jsErrors": [],
+    "expectedRule": null
+  },
+  {
+    "case": "overflow",
+    "passed": true,
+    "issues": 2,
+    "jsErrors": [],
+    "expectedRule": "horizontal-overflow"
+  },
+  {
+    "case": "clip",
+    "passed": true,
+    "issues": 1,
+    "jsErrors": [],
+    "expectedRule": "clipped-content"
+  },
+  {
+    "case": "fixed-overlay",
+    "passed": true,
+    "issues": 1,
+    "jsErrors": [],
+    "expectedRule": "fixed-overlay"
+  },
+  {
+    "case": "large-dom",
+    "passed": true,
+    "issues": 0,
+    "jsErrors": [],
+    "expectedRule": null
+  },
+  {
+    "case": "dynamic-spa",
+    "passed": true,
+    "issues": 0,
+    "jsErrors": [],
+    "expectedRule": null
+  },
+  {
+    "case": "mobile",
+    "passed": true,
+    "issues": 0,
+    "jsErrors": [],
+    "expectedRule": null
+  },
+  {
+    "case": "shadow-transform",
+    "passed": true,
+    "issues": 0,
+    "jsErrors": [],
+    "expectedRule": null
+  },
+  {
+    "case": "floating-overlap",
+    "passed": true,
+    "issues": 1,
+    "jsErrors": [],
+    "expectedRule": "floating-overlap"
+  },
+  {
+    "case": "small-control",
+    "passed": true,
+    "issues": 1,
+    "jsErrors": [],
+    "expectedRule": "small-control"
+  }
+]

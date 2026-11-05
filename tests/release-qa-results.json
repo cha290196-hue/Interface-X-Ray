@@ -1,0 +1,122 @@
+[
+  {
+    "check": "Original computed CSS baseline survives 3 edits",
+    "passed": true,
+    "detail": "th\nheight\nmin-width\nmax-width\nmargin\npadding\ndisplay\ngap\nalign-items\njustify-content\nposition\noverflow\ntransform\nz-index\n新值\n当前计算值\n0px\n首次修改前计算值\n1500px\n"
+  },
+  {
+    "check": "Undo progressive to 500px",
+    "passed": true,
+    "detail": "500px"
+  },
+  {
+    "check": "Undo progressive to 1000px",
+    "passed": true,
+    "detail": "1000px"
+  },
+  {
+    "check": "Undo progressive to 1500px",
+    "passed": true,
+    "detail": "1500px"
+  },
+  {
+    "check": "Redo after 3 sequential edits",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "Reset restores stylesheet value",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "Measured A/B thumbnails rendered",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "Real A/B exported widths changed",
+    "passed": true,
+    "detail": "1"
+  },
+  {
+    "check": "A/B report contains real bug target",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "CSS query search selects exact DOM result",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "CSS query row selects actual element",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "3D node set rendered",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "Stacking context mode switched",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "Accessible color palette changed",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "English interface restored",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "Chinese interface restored",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "No DOM overlay after exit",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "Exit restores original CSS",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "DOM tree virtualized <70 mounted rows",
+    "passed": true,
+    "detail": "44"
+  },
+  {
+    "check": "Scrolled DOM tree exposes late nodes",
+    "passed": true,
+    "detail": "span.cell"
+  },
+  {
+    "check": "CSS selector search finds node beyond row 200",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "Large DOM node selection resolves real page",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "check": "Shadow DOM mutation observed and rescanned",
+    "passed": true,
+    "detail": "实时分析\n18 nodes · 0 findings"
+  },
+  {
+    "check": "No page JavaScript exceptions",
+    "passed": true,
+    "detail": "[]"
+  }
+]
