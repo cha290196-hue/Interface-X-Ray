@@ -20,8 +20,19 @@ with sync_playwright() as p:
  page.screenshot(path=str(ROOT/'screenshots/16-measurement.png'))
  print('Measurement between real rectangles and toast cap passed',root.locator('.ix-toast').count())
  root.locator('[data-action=tab][data-tab=elements]').click()
- page.locator('#clip-child').click(force=True)
- clip=page.evaluate("""() => {const svg=document.querySelector('#interface-xray-extension-host').shadowRoot.querySelector('.ix-overlay');return svg.innerHTML;}""")
+ # Click inside the visible part of the clipped element. A forced click at
+ # its geometrical center may land beyond the parent's clip or the viewport.
+ page.locator('#clip-parent').scroll_into_view_if_needed()
+ parent=page.locator('#clip-parent').bounding_box()
+ assert parent, 'Clipping parent has no geometry'
+ page.mouse.click(parent['x']+23,parent['y']+44)
+ page.wait_for_function("""() => {
+   const host=document.querySelector('#interface-xray-extension-host');
+   const svg=host?.shadowRoot?.querySelector('.ix-overlay');
+   return !!svg?.querySelector('rect[stroke="#f4c486"],rect[stroke="#6ae3d4"]');
+ }""",timeout=5000)
+ clip=page.evaluate("""() => document.querySelector('#interface-xray-extension-host').shadowRoot.querySelector('.ix-overlay').innerHTML""")
+ assert 'clip-child' in root.locator('.ix-card.selected').first.inner_text(), 'Click must select clipped child'
  assert 'stroke="#f4c486"' in clip or 'stroke="#6ae3d4"' in clip
  page.screenshot(path=str(ROOT/'screenshots/17-clipping-geometry.png'))
  print('Visible clipping geometry overlay passed',len(clip),'characters')
