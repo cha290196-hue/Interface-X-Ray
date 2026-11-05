@@ -1,0 +1,61 @@
+name: Verify and build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-unit:
+    name: Source checks and MV3 package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - name: Validate built manifest
+        run: |
+          test -f dist/manifest.json
+          test -f dist/background.js
+          test -f dist/content.js
+          node -e "const m=require('./dist/manifest.json'); if(m.manifest_version!==3 || m.version!=='1.0.0') process.exit(1);"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: interface-xray-unpacked-extension
+          path: dist/
+          retention-days: 14
+
+  chromium-integration:
+    name: Chromium layout and visual integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install playwright
+      - run: python -m playwright install --with-deps chromium
+      - run: npm run build
+      - run: python tests/scenarios.py
+      - run: python tests/e2e.py
+      - run: npm run test:release
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chromium-test-evidence
+          path: |
+            tests/*-results.json
+            tests/*-result.json
+            screenshots/*.png
+          retention-days: 7
